@@ -1,0 +1,9 @@
+*.pyc
+*.log
+*.pth
+*.txt
+*test_dl.py
+**/__pycache__
+**/data
+**/predictions
+**.h5
