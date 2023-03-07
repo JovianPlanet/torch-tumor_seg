@@ -10,10 +10,10 @@ def get_parameters(mode):
     epochs     = 20
     batch_size = 8
     new_z      = [2, 2, 2]
-    n_heads    = 100 #368
-    # n_train    = 10
-    # n_val      = 15
-    # n_test     = 15
+    n_heads    = 100 #368 Total cabezas disponibles entrenamiento: 295
+    n_train    = 295
+    n_val      = 37
+    n_test     = 37
 
     labels = {'bgnd': 0, # Image background
               'NCR' : 1, # necrotic tumor core
@@ -51,42 +51,39 @@ def get_parameters(mode):
                                 'results'
         )
 
-        return {'mode'          : mode,
-                'brats_train'   : brats_train,
-                'brats_val'     : brats_val,
-                'model_dims'    : model_dims,
-                'lr'            : lr,
-                'epochs'        : epochs,
-                'batch_size'    : batch_size,
-                'new_z'         : new_z,
-                'n_heads'       : n_heads,
-                # 'n_train'       : n_train,
-                # 'n_val'         : n_val,
-                # 'n_test'        : n_test,
-                'model_fn'      : model_fn,
-                'losses_fn'     : losses_fn,
-                'dices_fn'      : dices_fn,
-                'res_path'      : res_path, 
-                'labels'        : labels,
+        return {'mode'        : mode,
+                'brats_train' : brats_train,
+                'brats_val'   : brats_val,
+                'model_dims'  : model_dims,
+                'lr'          : lr,
+                'epochs'      : epochs,
+                'batch_size'  : batch_size,
+                'new_z'       : new_z,
+                'n_heads'     : n_heads,
+                'n_train'     : n_train,
+                'n_val'       : n_val,
+                'model_fn'    : model_fn,
+                'losses_fn'   : losses_fn,
+                'dices_fn'    : dices_fn,
+                'res_path'    : res_path, 
+                'labels'      : labels,
         }
 
     elif mode == 'test':
 
         threshold = 0.5
 
-        return {'mode'               : mode,
-                'brats_train'        : brats_train,
-                'brats_val'          : brats_val,
-                'model_dims'         : model_dims,
-                'lr'                 : lr,
-                'epochs'             : epochs,
-                'batch_size'         : batch_size,
-                'new_z'              : new_z,
-                'n_heads'            : n_heads,
-                # 'n_train'            : n_train,
-                # 'n_val'              : n_val,
-                # 'n_test'             : n_test,
-                'thres'              : threshold,
-                'model_fn'           : model_fn,
-                'labels'             : labels,
+        return {'mode'        : mode,
+                'brats_train' : brats_train,
+                'brats_val'   : brats_val,
+                'model_dims'  : model_dims,
+                'lr'          : lr,
+                'epochs'      : epochs,
+                'batch_size'  : batch_size,
+                'new_z'       : new_z,
+                'n_heads'     : n_heads,
+                'n_test'      : n_test,
+                'thres'       : threshold,
+                'model_fn'    : model_fn,
+                'labels'      : labels,
         }
