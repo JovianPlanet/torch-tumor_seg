@@ -42,7 +42,8 @@ def train(config):
         batch_size=1 #config['batch_size'],
     )
 
-    print(f'Tamano del dataset de entrenamiento: {train_size} slices \n')
+    print(f'Tamano del dataset de entrenamiento: {len(ds_train)} slices')
+    print(f'Tamano del dataset de validacion: {len(ds_val)} slices \n')
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using {device} device")

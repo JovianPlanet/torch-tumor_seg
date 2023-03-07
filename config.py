@@ -21,9 +21,9 @@ def get_parameters(mode):
               'ET'  : 4, # GD-enhancing tumor
     }
 
-    model_fn  = 'weights-bcedice-'+str(epochs)+'_eps-'+str(n_heads)+'_heads-'+str(datetime.date.today())+'.pth'
-    losses_fn = './outs/losses-bcedice-'+str(epochs)+'_eps-'+str(n_heads)+'_heads-'+str(datetime.date.today())+'.csv'
-    dices_fn  = './outs/dices-bcedice-'+str(epochs)+'_eps-'+str(n_heads)+'_heads-'+str(datetime.date.today())+'.csv'
+    model_fn  = 'weights-bcedice-'+str(epochs)+'_eps-'+str(n_train)+'_heads-'+str(datetime.date.today())+'.pth'
+    losses_fn = './outs/losses-bcedice-'+str(epochs)+'_eps-'+str(n_train)+'_heads-'+str(datetime.date.today())+'.csv'
+    dices_fn  = './outs/dices-bcedice-'+str(epochs)+'_eps-'+str(n_train)+'_heads-'+str(datetime.date.today())+'.csv'
 
     brats_train = os.path.join('/home',
                               'davidjm',
