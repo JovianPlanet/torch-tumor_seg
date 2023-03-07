@@ -1,6 +1,6 @@
 from config import get_parameters
 from train import train
-#from test import test
+from test import test
 
 def main(config):
             
@@ -13,5 +13,5 @@ def main(config):
         test(config)
 
 if __name__ == '__main__':
-    config = get_parameters('train')
+    config = get_parameters('test')
     main(config)

@@ -12,7 +12,14 @@ class Unet2D_DS(Dataset):
 
         self.config = config
 
-        self.subjects = next(os.walk(self.config['brats_train']))[1] # [2]: lists files; [1]: lists subdirectories; [0]: ?
+        data_dir = ''
+
+        if self.config['mode'] == 'train':
+            data_dir = self.config['brats_train'] # [2]: lists files; [1]: lists subdirectories; [0]: root
+        elif self.config['mode'] == 'test':
+            data_dir = self.config['brats_val'] # [2]: lists files; [1]: lists subdirectories; [0]: root
+
+        self.subjects = next(os.walk(data_dir))[1] # [2]: lists files; [1]: lists subdirectories; [0]: root
 
         self.L = []
 
@@ -21,14 +28,14 @@ class Unet2D_DS(Dataset):
         for subject in self.subjects:
             if '355' in subject: continue
             #print(f'\nsujeto: {subject}')
-            files = next(os.walk(os.path.join(self.config['brats_train'], subject)))[2]
+            files = next(os.walk(os.path.join(data_dir, subject)))[2]
             for file_ in files:
                 if 't1.nii' in file_:
                     #print(f'\tfile_: {file_}')
-                    mri_path = os.path.join(self.config['brats_train'], subject, file_)
+                    mri_path = os.path.join(data_dir, subject, file_)
                 if 'seg.nii' in file_:
                     #print(f'\tfile_: {file_}')
-                    label_path = os.path.join(self.config['brats_train'], subject, file_)
+                    label_path = os.path.join(data_dir, subject, file_)
 
             for slice_ in range(self.config['model_dims'][2]):
                 self.L.append([subject, slice_, mri_path, label_path])

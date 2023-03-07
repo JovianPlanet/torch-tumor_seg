@@ -7,13 +7,13 @@ def get_parameters(mode):
 
     model_dims = (128, 128, 64)
     lr         = 0.001
-    epochs     = 10
+    epochs     = 20
     batch_size = 8
     new_z      = [2, 2, 2]
-    n_heads    = 150 #368
-    n_train    = 10
-    n_val      = 15
-    n_test     = 15
+    n_heads    = 100 #368
+    # n_train    = 10
+    # n_val      = 15
+    # n_test     = 15
 
     labels = {'bgnd': 0, # Image background
               'NCR' : 1, # necrotic tumor core
@@ -21,7 +21,9 @@ def get_parameters(mode):
               'ET'  : 4, # GD-enhancing tumor
     }
 
-    model_fn = 'bcedice-'+str(epochs)+'_eps-'+str(n_heads)+'_heads-'+str(datetime.date.today())+'.pth'
+    model_fn  = 'weights-bcedice-'+str(epochs)+'_eps-'+str(n_heads)+'_heads-'+str(datetime.date.today())+'.pth'
+    losses_fn = './outs/losses-bcedice-'+str(epochs)+'_eps-'+str(n_heads)+'_heads-'+str(datetime.date.today())+'.csv'
+    dices_fn  = './outs/dices-bcedice-'+str(epochs)+'_eps-'+str(n_heads)+'_heads-'+str(datetime.date.today())+'.csv'
 
     brats_train = os.path.join('/home',
                               'davidjm',
@@ -35,8 +37,7 @@ def get_parameters(mode):
                              'davidjm',
                              'Downloads',
                              'BraTS-dataset',
-                             'BraTS2020_ValidationData',
-                             'MICCAI_BraTS2020_ValidationData'
+                             'test',
     )
 
 
@@ -59,10 +60,12 @@ def get_parameters(mode):
                 'batch_size'    : batch_size,
                 'new_z'         : new_z,
                 'n_heads'       : n_heads,
-                'n_train'       : n_train,
-                'n_val'         : n_val,
-                'n_test'        : n_test,
+                # 'n_train'       : n_train,
+                # 'n_val'         : n_val,
+                # 'n_test'        : n_test,
                 'model_fn'      : model_fn,
+                'losses_fn'     : losses_fn,
+                'dices_fn'      : dices_fn,
                 'res_path'      : res_path, 
                 'labels'        : labels,
         }
@@ -80,9 +83,9 @@ def get_parameters(mode):
                 'batch_size'         : batch_size,
                 'new_z'              : new_z,
                 'n_heads'            : n_heads,
-                'n_train'            : n_train,
-                'n_val'              : n_val,
-                'n_test'             : n_test,
+                # 'n_train'            : n_train,
+                # 'n_val'              : n_val,
+                # 'n_test'             : n_test,
                 'thres'              : threshold,
                 'model_fn'           : model_fn,
                 'labels'             : labels,

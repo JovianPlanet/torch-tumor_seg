@@ -1,63 +1,60 @@
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
-from datasets.dataloader import UnetDataloader
-from models.unet import Unet
-from models.metrics import * 
+from get_data import Unet2D_DS
+from unet import Unet
+from metrics import dice_coeff
 from utils.plots import *
+from torchmetrics.functional import dice
 
 
 def test(config):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Using {device} device")
+    print(f"\nUsing {device} device\n")
 
-    dices = []
+    # dices = []
 
-    for heads in range(train_heads):
+    PATH_SUPERVISED = 'weights-bcedice-20_eps-100_heads-2023-03-04.pth'
 
-        PATH_SUPERVISED = './models/unetm_wts-h'+str(heads+1)+'-ep25-4.pth'
+    test_ds = Unet2D_DS(config)
 
-        test_ds = UnetDataloader(
-            TEST_PATH,
-            'T1.nii',
-            'LabelsForTraining.nii',
-            48, 
-            val_heads
-        )
+    test_mris = DataLoader(
+        test_ds, 
+        batch_size=1#config['batch_size'],
+    )
 
-        test_mris = DataLoader(
-            test_ds, 
-            batch_size=batch_size,
-        )
+    unet = Unet(num_classes=1, depth=5).to(device, dtype=torch.double)
+    unet.load_state_dict(torch.load(PATH_SUPERVISED))
 
-        unet = Unet(num_classes=4, depth=5).to(device, dtype=torch.double)
-        unet.load_state_dict(torch.load(PATH_SUPERVISED))
+    gen_dice = 0
 
-        # since we're not training, we don't need to calculate the gradients for our outputs
-        unet.eval()
-        with torch.no_grad():
-            for i, data in enumerate(test_mris):
-                images, labels = data
-                images = images.unsqueeze(1).to(device, dtype=torch.double)
-                labels = labels.to(device, dtype=torch.double)
+    # since we're not training, we don't need to calculate the gradients for our outputs
+    unet.eval()
+    with torch.no_grad():
+        for i, data in enumerate(test_mris):
+            images, labels = data
+            images = images.unsqueeze(1).to(device, dtype=torch.double)
+            labels = labels.to(device, dtype=torch.double)
 
-                # calculate outputs by running images through the network
-                outputs = unet(images)
-                pval = probs(outputs)
-                preds = torch.argmax(pval, dim=1)
+            # calculate outputs by running images through the network
+            outputs = unet(images)
+            probs = nn.Sigmoid()  # Sigmoid para biclase
+            preds  = probs(outputs) 
+            preds = torch.where(preds>0.5, 1, 0)
 
-                for key, value in classes.items():
-                    batch_dice[key] = dice_coeff(torch.where(preds==value, 1, 0), 
-                                      torch.where(labels==value, 1, 0)
-                    )
-                    gen_dice[key] += batch_dice[key].item()
-                    #print(f'Test {key} Dice score (batch): {batch_dice[key].item()}')
+            #batch_dice = dice_coeff(preds, labels)
+            batch_dice = dice(preds, labels.long(), ignore_index=0, zero_division=1) # Metrica dice de torchmetrics
+            gen_dice += batch_dice
+            print(f'Test Dice score (batch): {batch_dice:.3f}')
 
-                #plot_batch_full(images.squeeze(1), labels, preds)
-        gen_dice = {k: v / (i+1) for k, v in gen_dice.items()}
-        total = sum(gen_dice.values())/num_classes
-        dices.append(total)
-        print(f'{gen_dice.values()}, {total:.3f}')
+            #print(f'{images.squeeze(1).shape}, {labels.shape}, {preds.shape}')
 
-    dices = torch.tensor(dices)
-    torch.save(dices, PATH_TEST)
+            #plot_batch_full(images.squeeze(1), labels, preds.squeeze(1))
+            
+    gen_dice = gen_dice / (i+1)
+    # dices.append(total)
+    print(f'\nDice promedio = {gen_dice:.3f}')
+
+# dices = torch.tensor(dices)
+# torch.save(dices, PATH_TEST)

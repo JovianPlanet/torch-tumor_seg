@@ -5,5 +5,5 @@
 *test_dl.py
 **/__pycache__
 **/data
-**/predictions
+**/outs
 **.h5

@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torchmetrics import Dice
 
 
 def dice_coeff(x, y, smooth=1e-6):
@@ -11,8 +12,9 @@ def dice_coeff(x, y, smooth=1e-6):
     x = x.reshape(-1)#view(-1)
     y = y.reshape(-1)#view(-1)
 
-    # if y.sum() == 0:
-    #     x = (x==0) 
+    # if y.sum() == 0 and x.sum() == 0:
+    #     print(f'sum labels = {y.sum()}')
+    #     x = (x==0) torch.where(x==0, 1, 0)
     #     y = (y==0)
     
     intersection = (x * y).sum()                            
@@ -48,13 +50,15 @@ class DiceLoss(nn.Module):
 
 
 class BCEDiceLoss(nn.Module):
-    def __init__(self, weight = None, size_average = True):
+    def __init__(self, weight = None, size_average = True, device='device'):
         super(BCEDiceLoss, self).__init__()
         self.bce = nn.BCEWithLogitsLoss()
-        self.dice = DiceLoss()
+        self.dice = DiceLoss() # Usar el dice de este codigo
+        #self.dice = Dice(zero_division=1, ignore_index=0).to(device) # Usar el dice de torchmetrics
 
     def forward(self, inputs, targets, smooth = 1):
         assert(inputs.shape == targets.shape)
+        # dice_loss = 1. - self.dice(inputs, targets.long()) # Para el dice de la libreria torchmetrics
         dice_loss = self.dice(inputs, targets)
         bce_loss = self.bce(inputs, targets)
 
@@ -75,7 +79,7 @@ class FocalLoss(nn.Module):
         targets = targets.view(-1)
         
         #first compute binary cross-entropy 
-        BCE = nn.CrossEntropyLoss()(inputs, targets, reduction='mean')
+        BCE = nn.CrossEntropyLoss()(inputs, targets)
         BCE_EXP = torch.exp(-BCE)
         focal_loss = alpha * (1-BCE_EXP)**gamma * BCE
                        
