@@ -8,28 +8,37 @@ import nibabel.processing
 
 class Unet2D_DS(Dataset):
 
-    def __init__(self, config):
+    def __init__(self, config, mode):
 
         self.config = config
+        self.mode   = mode
 
         data_dir = ''
+        n = 0
 
-        if self.config['mode'] == 'train':
-            data_dir = self.config['brats_train'] # [2]: lists files; [1]: lists subdirectories; [0]: root
-        elif self.config['mode'] == 'test':
-            data_dir = self.config['brats_val'] # [2]: lists files; [1]: lists subdirectories; [0]: root
+        if self.mode == 'train':
+            data_dir = self.config['data']['train'] 
+            n = self.config['n_train']
+
+        elif self.mode == 'val':
+            data_dir = self.config['data']['val']
+            n = self.config['n_val']
+
+        elif self.mode == 'test':
+            data_dir = self.config['data']['test']
+            n = self.config['n_test']
 
         self.subjects = next(os.walk(data_dir))[1] # [2]: lists files; [1]: lists subdirectories; [0]: root
 
         self.L = []
 
-        n = config['n_heads']*config['model_dims'][2]
+        #n = config['n_heads']*config['model_dims'][2]
 
         for subject in self.subjects:
             if '355' in subject: continue
             #print(f'\nsujeto: {subject}')
             files = next(os.walk(os.path.join(data_dir, subject)))[2]
-            for file_ in files:
+            for file_ in files[:n]:
                 if 't1.nii' in file_:
                     #print(f'\tfile_: {file_}')
                     mri_path = os.path.join(data_dir, subject, file_)
@@ -40,7 +49,7 @@ class Unet2D_DS(Dataset):
             for slice_ in range(self.config['model_dims'][2]):
                 self.L.append([subject, slice_, mri_path, label_path])
 
-        self.df = pd.DataFrame(self.L[:n], columns=['Subject', 'Slice', 'Path MRI', 'Path Label'])
+        self.df = pd.DataFrame(self.L, columns=['Subject', 'Slice', 'Path MRI', 'Path Label'])
         self.df = self.df.assign(id=self.df.index.values).sample(frac=1)
         print(f'dataframe: \n{self.df} \n')
 

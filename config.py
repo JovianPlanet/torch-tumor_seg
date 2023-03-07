@@ -29,16 +29,25 @@ def get_parameters(mode):
                               'davidjm',
                               'Downloads',
                               'BraTS-dataset',
-                              'BraTS2020_TrainingData',
-                              'MICCAI_BraTS2020_TrainingData'
+                              'train',
+                              #'MICCAI_BraTS2020_TrainingData'
     )
 
     brats_val = os.path.join('/home',
                              'davidjm',
                              'Downloads',
                              'BraTS-dataset',
+                             'val',
+    )
+
+    brats_test = os.path.join('/home',
+                             'davidjm',
+                             'Downloads',
+                             'BraTS-dataset',
                              'test',
     )
+
+    datasets = {'train': brats_train, 'val': brats_val, 'test': brats_test}
 
 
     if mode == 'train':
@@ -52,8 +61,7 @@ def get_parameters(mode):
         )
 
         return {'mode'        : mode,
-                'brats_train' : brats_train,
-                'brats_val'   : brats_val,
+                'data'        : datasets,
                 'model_dims'  : model_dims,
                 'lr'          : lr,
                 'epochs'      : epochs,
@@ -74,8 +82,7 @@ def get_parameters(mode):
         threshold = 0.5
 
         return {'mode'        : mode,
-                'brats_train' : brats_train,
-                'brats_val'   : brats_val,
+                'data'        : datasets,
                 'model_dims'  : model_dims,
                 'lr'          : lr,
                 'epochs'      : epochs,

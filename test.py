@@ -17,7 +17,7 @@ def test(config):
 
     PATH_SUPERVISED = 'weights-bcedice-20_eps-100_heads-2023-03-04.pth'
 
-    test_ds = Unet2D_DS(config)
+    test_ds = Unet2D_DS(config, 'test')
 
     test_mris = DataLoader(
         test_ds, 

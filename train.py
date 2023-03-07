@@ -23,22 +23,23 @@ def train(config):
 
     # Crear datasets #
 
-    ds = Unet2D_DS(config)
+    ds_train = Unet2D_DS(config, 'train')
+    ds_val   = Unet2D_DS(config, 'val')
 
-    train_size = int(0.8 * len(ds))
-    test_size  = len(ds) - train_size
+    # train_size = int(0.8 * len(ds))
+    # test_size  = len(ds) - train_size
 
-    train_mris, val_mris = random_split(ds, [train_size, test_size], generator=torch.Generator().manual_seed(42))
+    # train_mris, val_mris = random_split(ds, [train_size, test_size], generator=torch.Generator().manual_seed(42))
 
     train_dl = DataLoader(
-        train_mris, 
+        ds_train, #train_mris, 
         batch_size=config['batch_size'],
         shuffle=True,
     )
 
     val_dl = DataLoader(
-        val_mris, 
-        batch_size=config['batch_size'],
+        ds_val, #val_mris, 
+        batch_size=1 #config['batch_size'],
     )
 
     print(f'Tamano del dataset de entrenamiento: {train_size} slices \n')

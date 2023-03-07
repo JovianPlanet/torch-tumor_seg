@@ -13,5 +13,5 @@ def main(config):
         test(config)
 
 if __name__ == '__main__':
-    config = get_parameters('test')
+    config = get_parameters('train')
     main(config)
