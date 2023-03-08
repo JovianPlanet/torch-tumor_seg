@@ -42,21 +42,30 @@ def conv1x1(in_channels, out_channels, groups=1):
 
 class DownConv(nn.Module):
 
-    def __init__(self, in_channels, out_channels, pooling=True):
+    def __init__(self, in_channels, out_channels, pooling=True, batchnorm=False):
         super(DownConv, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.pooling = pooling
+        self.batchnorm = batchnorm
 
         self.conv1 = conv3x3(self.in_channels, self.out_channels)
         self.conv2 = conv3x3(self.out_channels, self.out_channels)
 
         if self.pooling:
             self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        if self.batchnorm:
+            self.bn = nn.BatchNorm2d(num_features=self.out_channels)
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
+        x = self.conv1(x)
+        if self.batchnorm:
+            x = self.bn(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        if self.batchnorm:
+            x = self.bn(x)
+        x = F.relu(x)
         before_pool = x
         if self.pooling:
             x = self.pool(x)
@@ -64,24 +73,32 @@ class DownConv(nn.Module):
 
 class UpConv(nn.Module):
 
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, batchnorm=False):
         super(UpConv, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.batchnorm = batchnorm
 
         self.upconv = upconv2x2(self.in_channels, self.out_channels)
 
         self.conv1 = conv3x3(2*self.out_channels, self.out_channels)
         self.conv2 = conv3x3(self.out_channels, self.out_channels)
 
+        if self.batchnorm:
+            self.bn = nn.BatchNorm2d(num_features=out_channels)
+
     def forward(self, from_down, from_up):
         from_up = self.upconv(from_up)
-        #print(f'from up = {from_up.shape}')
-        #print(f'from down = {from_down.shape}\n')
         x = torch.cat((from_up, from_down), 1)
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
+        x = self.conv1(x)
+        if self.batchnorm:
+            x = self.bn(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        if self.batchnorm:
+            x = self.bn(x)
+        x = F.relu(x)
         return x
 
 

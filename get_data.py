@@ -34,11 +34,11 @@ class Unet2D_DS(Dataset):
 
         #n = config['n_heads']*config['model_dims'][2]
 
-        for subject in self.subjects:
+        for subject in self.subjects[:n]:
             if '355' in subject: continue
             #print(f'\nsujeto: {subject}')
             files = next(os.walk(os.path.join(data_dir, subject)))[2]
-            for file_ in files[:n]:
+            for file_ in files:
                 if 't1.nii' in file_:
                     #print(f'\tfile_: {file_}')
                     mri_path = os.path.join(data_dir, subject, file_)
