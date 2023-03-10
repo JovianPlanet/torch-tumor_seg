@@ -1,6 +1,7 @@
 from config import get_parameters
 from train import train
 from test import test
+from analysis import assess
 
 def main(config):
             
@@ -12,6 +13,10 @@ def main(config):
 
         test(config)
 
+    elif config['mode'] == 'assess':
+
+        assess(config)
+
 if __name__ == '__main__':
-    config = get_parameters('train')
+    config = get_parameters('assess')
     main(config)

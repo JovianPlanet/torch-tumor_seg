@@ -25,12 +25,15 @@ def get_parameters(mode):
     losses_fn = './outs/losses-bcedice-'+str(epochs)+'_eps-'+str(n_train)+'_heads-'+str(datetime.date.today())+'-no_bn.csv'
     dices_fn  = './outs/dices-bcedice-'+str(epochs)+'_eps-'+str(n_train)+'_heads-'+str(datetime.date.today())+'-no_bn.csv'
 
+    PATH_TRAINED_MODEL = 'weights-bcedice-20_eps-100_heads-2023-03-04.pth'
+    PATH_TEST_DICES = './outs/dice_coeff'+PATH_TRAINED_MODEL[7:-4]+'-test.csv'
+
     brats_train = os.path.join('/home',
-                              'davidjm',
-                              'Downloads',
-                              'BraTS-dataset',
-                              'train',
-                              #'MICCAI_BraTS2020_TrainingData'
+                               'davidjm',
+                               'Downloads',
+                               'BraTS-dataset',
+                               'train',
+                               #'MICCAI_BraTS2020_TrainingData'
     )
 
     brats_val = os.path.join('/home',
@@ -84,13 +87,26 @@ def get_parameters(mode):
         return {'mode'        : mode,
                 'data'        : datasets,
                 'model_dims'  : model_dims,
-                'lr'          : lr,
-                'epochs'      : epochs,
-                'batch_size'  : batch_size,
                 'new_z'       : new_z,
-                'n_heads'     : n_heads,
                 'n_test'      : n_test,
                 'thres'       : threshold,
-                'model_fn'    : model_fn,
                 'labels'      : labels,
+                'weights'     : PATH_TRAINED_MODEL,
+                'metrics_fn'  : PATH_TEST_DICES,
         }
+
+    elif mode == 'assess':
+
+        train_losses = './outs/losses-bcedice-20_eps-100_heads-2023-03-04.csv'
+        train_dices  = './outs/dices-bcedice-20_eps-100_heads-2023-03-04.csv'
+        test_dices = './outs/dice_coeff-bcedice-20_eps-100_heads-2023-03-04-test.csv'
+
+        files = {'train_Loss': train_losses,
+                 'train_Dice': train_dices,
+                 'test_Dice' : test_dices}
+
+        return {'mode'     : mode,
+                'labels'   : labels,
+                'losses_fn': losses_fn,
+                'dices_fn' : dices_fn,
+                'files'    : files}

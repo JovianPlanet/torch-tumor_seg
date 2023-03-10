@@ -46,6 +46,45 @@ def plot_batch_full(x, y, p):
         fig.tight_layout()
         plt.show()
 
+def plot_overlays(x, y, p):
+
+    x = x.squeeze(1)
+
+    for im in range(x.shape[0]):
+
+        fig = plt.figure(figsize=(16, 16))
+        fig.subplots_adjust(hspace=1, wspace=1)
+
+        ax1 = fig.add_subplot(2, 3, 1)
+        ax1.axis("off")
+        ax1.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
+
+        ax2 = fig.add_subplot(2, 3, 2)
+        ax2.axis("off")
+        ax2.imshow(y[im, :, :].cpu().detach().numpy(), cmap="gray")
+
+        ax3 = fig.add_subplot(2, 3, 3)
+        ax3.axis("off")
+        ax3.imshow(p[im, :, :].cpu().detach().numpy(), cmap="gray")
+
+        ax4 = fig.add_subplot(2, 3, 4)
+        ax4.axis("off")
+        ax4.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
+
+        ax5 = fig.add_subplot(2, 3, 5)
+        ax5.axis("off")
+        ax5.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
+        ax5.imshow(y[im, :, :].cpu().detach().numpy(), cmap='gray', alpha=0.5)
+
+
+        ax6 = fig.add_subplot(2, 3, 6)
+        ax6.axis("off")
+        ax6.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
+        ax6.imshow(p[im, :, :].cpu().detach().numpy(), cmap="gray", alpha=0.5)
+
+        fig.tight_layout()
+        plt.show()
+
 def plot_single(x, y):
     x = x.squeeze(0)
     fig = plt.figure(figsize=(16, 16))
