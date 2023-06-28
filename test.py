@@ -47,7 +47,7 @@ def test(config):
             outputs = unet(images)
             probs = nn.Sigmoid()  # Sigmoid para biclase
             preds  = probs(outputs) 
-            preds = torch.where(preds>0.5, 1, 0)
+            preds = torch.where(preds>0.5, 1., 0.)
 
             batch_dice = dice_coeff(preds, labels)
             #batch_dice = dice(preds, labels.long(), ignore_index=0, zero_division=1) # Metrica dice de torchmetrics
@@ -58,14 +58,16 @@ def test(config):
                 print(f'Dice promedio despues de {i+1} batches = {gen_dice/(i+1):.3f}')
 
             #plot_batch_full(images.squeeze(1), labels, preds.squeeze(1))
-            #plot_overlays(images.squeeze(1), labels, preds.squeeze(1))
+
+            if torch.any(labels):
+                plot_overlays(images.squeeze(1), labels, preds.squeeze(1))
             
     gen_dice = gen_dice / (i+1)
 
     print(f'\nDice promedio total = {gen_dice:.3f}')
     df_dice = pd.DataFrame(dices, columns=['Batch', 'Dice'])
     df_dice = df_dice.assign(id=df_dice.index.values)
-    df_dice.to_csv(config['metrics_fn'])
+    #df_dice.to_csv(config['test_fn'])
 
 # dices = torch.tensor(dices)
 # torch.save(dices, PATH_TEST)

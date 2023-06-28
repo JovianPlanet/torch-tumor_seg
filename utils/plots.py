@@ -46,7 +46,7 @@ def plot_batch_full(x, y, p):
         fig.tight_layout()
         plt.show()
 
-def plot_overlays(x, y, p):
+def plot_overlays(x, y, p, mode='plot', fn='res'):
 
     x = x.squeeze(1)
 
@@ -83,7 +83,13 @@ def plot_overlays(x, y, p):
         ax6.imshow(p[im, :, :].cpu().detach().numpy(), cmap="gray", alpha=0.5)
 
         fig.tight_layout()
-        plt.show()
+
+        if mode == 'plot':
+            plt.show()
+        elif mode == 'save':
+            plt.savefig(fn, dpi='figure', format='pdf')
+
+        return
 
 def plot_single(x, y):
     x = x.squeeze(0)

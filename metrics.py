@@ -34,14 +34,17 @@ class DiceLoss(nn.Module):
         #comment out if your model contains a sigmoid or equivalent activation layer
         preds = nn.Sigmoid()  
         inputs = preds(inputs) 
+        #inputs = torch.where(inputs>0.5, 1., 0.)
+
+        # print(f'En diceloss = {torch.unique(inputs)}')
 
         #flatten label and prediction tensors
         inputs = inputs.reshape(-1)#view(-1)
         targets = targets.reshape(-1)#view(-1)
 
-        if targets.sum() == 0 and x.any():
-            inputs = torch.where(inputs==0, 1, 0)#(inputs==0) 
-            targets = torch.where(targets==0, 1, 0)#(targets==0)
+        # if targets.sum() == 0 and inputs.sum() > 0:
+        #     inputs = torch.where(inputs==0, 1, 0)#(inputs==0) 
+        #     targets = torch.where(targets==0, 1, 0)#(targets==0)
         
         intersection = (inputs * targets).sum()                            
         dice = torch.mean((2.*intersection + smooth)/(inputs.sum() + targets.sum() + smooth))  

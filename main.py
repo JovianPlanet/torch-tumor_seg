@@ -18,5 +18,5 @@ def main(config):
         assess(config)
 
 if __name__ == '__main__':
-    config = get_parameters('assess')
+    config = get_parameters('train')
     main(config)

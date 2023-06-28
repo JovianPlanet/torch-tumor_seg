@@ -18,15 +18,15 @@ class Unet2D_DS(Dataset):
 
         if self.mode == 'train':
             data_dir = self.config['data']['train'] 
-            n = self.config['n_train']
+            n = self.config['hyperparams']['n_train']
 
         elif self.mode == 'val':
             data_dir = self.config['data']['val']
-            n = self.config['n_val']
+            n = self.config['hyperparams']['n_val']
 
         elif self.mode == 'test':
             data_dir = self.config['data']['test']
-            n = self.config['n_test']
+            n = self.config['hyperparams']['n_test']
 
         self.subjects = next(os.walk(data_dir))[1] # [2]: lists files; [1]: lists subdirectories; [0]: root
 
@@ -46,7 +46,7 @@ class Unet2D_DS(Dataset):
                     #print(f'\tfile_: {file_}')
                     label_path = os.path.join(data_dir, subject, file_)
 
-            for slice_ in range(self.config['model_dims'][2]):
+            for slice_ in range(self.config['hyperparams']['model_dims'][2]):
                 self.L.append([subject, slice_, mri_path, label_path])
 
         self.df = pd.DataFrame(self.L, columns=['Subject', 'Slice', 'Path MRI', 'Path Label'])
@@ -66,9 +66,9 @@ class Unet2D_DS(Dataset):
         #mri    = np.int16(nib.load(self.df.at[index, 'Path MRI']).get_data())[:, :, load_slice]
         #label_ = np.int16(nib.load(self.df.at[index, 'Path Label']).get_data())[:, :, load_slice]
 
-        mri    = preprocess(self.df.at[index, 'Path MRI'], self.config, norm=False)[:, :, load_slice]
+        mri    = preprocess(self.df.at[index, 'Path MRI'], self.config, norm=True)[:, :, load_slice]
         label_ = preprocess(self.df.at[index, 'Path Label'], self.config)[:, :, load_slice]
-        label  = np.where((label_==self.config['labels']['NCR']) | (label_==self.config['labels']['ET']), 1, 0)
+        label  = np.where((label_==self.config['labels']['NCR']) | (label_==self.config['labels']['ET']), 1., 0.)
 
         return mri, label
 
@@ -112,7 +112,7 @@ class Unet3D_DS(Dataset):
 
         mri    = np.int16(nib.load(self.df.at[index, 'Path MRI']).get_data())
         label_ = np.int16(nib.load(self.df.at[index, 'Path Label']).get_data())
-        label  = np.where((label_==self.config['labels']['NCR']) | (label_==self.config['labels']['ET']), 1, 0)
+        label  = np.where((label_==self.config['labels']['NCR']) | (label_==self.config['labels']['ET']), 1., 0.)
 
         return mri, label
 
@@ -120,17 +120,63 @@ def preprocess(path, config, norm=False):
 
     scan = nib.load(path)
     aff  = scan.affine
-    vol  = np.int16(scan.get_fdata())
+    vol  = scan.get_fdata() # np.int16(scan.get_fdata())
     #print(f'shape = {vol.shape}, path = {path}')
 
-    # Resamplea volumen y affine a un nuevo shape
-    new_zooms  = np.array(scan.header.get_zooms()) * config['new_z']
-    new_shape  = np.array(vol.shape) // config['new_z']
-    new_affine = nibabel.affines.rescale_affine(aff, vol.shape, new_zooms, (128, 128, 64))#new_shape)
-    scan       = nibabel.processing.conform(scan, (128, 128, 64), new_zooms)
+    # Remuestrea volumen y affine a un nuevo shape
+    # new_zooms  = np.array(scan.header.get_zooms()) * config['new_z']
+    # new_shape  = np.array(vol.shape) // config['new_z']
+    
+    new_affine = nibabel.affines.rescale_affine(aff, vol.shape, config['hyperparams']['new_z'], config['hyperparams']['model_dims']) # new_zooms, (128, 128, 64))#new_shape)
+    scan       = nibabel.processing.conform(scan, config['hyperparams']['model_dims'], config['hyperparams']['new_z']) # (128, 128, 64), new_zooms)
     ni_img     = nib.Nifti1Image(scan.get_fdata(), new_affine)
-    vol        = np.int16(ni_img.get_fdata())
+    vol        = ni_img.get_fdata() #np.int16(ni_img.get_fdata())
     if norm:
         vol        = (vol - np.min(vol))/(np.max(vol) - np.min(vol))
 
     return vol
+
+
+# def preprocess(path, config, norm=False):
+
+#     scan = nib.load(path)
+#     aff  = scan.affine
+
+#     vol  = scan.get_fdata()
+
+#     if 'Ras_msk' in path:
+
+#         try:
+#             vol = scan.get_fdata().squeeze(3)
+#             scan = nib.Nifti1Image(vol, aff)
+#         except:
+#             vol = np.where(vol==0., 0., 1.)
+#             scan = nib.Nifti1Image(vol, aff)
+
+
+#     # Remuestrea volumen y affine a un nuevo shape
+
+#     #new_zooms  = np.array(scan.header.get_zooms()) * config['new_z']
+#     #new_shape  = np.array(vol.shape) // config['new_z']
+
+#     new_affine = nibabel.affines.rescale_affine(aff, 
+#                                                 vol.shape, 
+#                                                 config['hyperparams']['new_z'], 
+#                                                 config['hyperparams']['model_dims']
+#     )
+
+#     scan       = nibabel.processing.conform(scan, 
+#                                             config['hyperparams']['model_dims'], 
+#                                             config['hyperparams']['new_z']
+#     )
+     
+#     ni_img     = nib.Nifti1Image(scan.get_fdata(), new_affine)
+#     vol        = ni_img.get_fdata() 
+
+#     if 'Ras_msk' in path:
+#         vol = np.where(vol <= 0.1, 0., 1.)
+
+#     if norm:
+#         vol = (vol - np.min(vol))/(np.max(vol) - np.min(vol))
+
+#     return vol
