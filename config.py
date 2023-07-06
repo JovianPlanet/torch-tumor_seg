@@ -7,12 +7,12 @@ def get_parameters(mode):
 
     hyperparams = {'model_dims': (128, 128, 64),
                    'lr'        : 0.0001,
-                   'epochs'    : 10, #20
+                   'epochs'    : 20, #20
                    'batch_size': 1,
                    'new_z'     : [2, 2, 2],
                    'n_heads'   : 67,
-                   'n_train'   : 25, #295 Total=295
-                   'n_val'     : 5, #37
+                   'n_train'   : 100, #295 Total=295
+                   'n_val'     : 15, #37
                    'n_test'    : 37,
                    'batchnorm' : False,
                    'nclasses'  : 1
@@ -52,11 +52,13 @@ def get_parameters(mode):
     if mode == 'train':
 
         files = {
-        'model_fn': 'weights-Dice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn.pth',
-        'losses_fn': './outs/losses-Dice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn.csv',
-        't_dice_fn': './outs/t-dices-Dice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn.csv',
-        'v_dice_fn': './outs/v-dices-Dice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn.csv',
-        'pics': './outs/imgs/Dice-'+str(hyperparams['epochs'])+'_eps-'+str(datetime.date.today()),
+        'model': 'weights-BCEDice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn',
+        'losses': './outs/losses-BCEDice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn.csv',
+        't_dices': './outs/t-dices-BCEDice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn.csv',
+        't_accus': './outs/t-accs-BCEDice-'+str(hyperparams['epochs'])+'_eps-'+str(datetime.date.today())+'-_nobn.csv',
+        'v_dices': './outs/v-dices-BCEDice-'+str(hyperparams['epochs'])+'_eps-'+str(hyperparams['n_train'])+'_heads-'+str(datetime.date.today())+'-_nobn.csv',
+        'v_accus': './outs/v-accs-BCEDice-'+str(hyperparams['epochs'])+'_eps-'+str(datetime.date.today())+'-_nobn.csv',
+        'pics': './outs/imgs/BCEDice-'+str(hyperparams['epochs'])+'_eps-'+str(datetime.date.today()),
         }
 
         res_path = os.path.join('/media',
