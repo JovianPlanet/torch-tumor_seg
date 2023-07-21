@@ -9,22 +9,16 @@ from metrics import dice_coeff
 from utils.plots import plot_batch_full, plot_overlays
 
 
-
 def test(config):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"\nUsing {device} device\n")
 
-    # dices = []
-
-    #PATH_SUPERVISED = 'weights-bcedice-20_eps-100_heads-2023-03-04.pth'
-    #PATH_DICES = './outs/'+PATH_SUPERVISED[:-4]+'-test.csv'
-
     test_ds = Unet2D_DS(config, 'test')
 
     test_mris = DataLoader(
         test_ds, 
-        batch_size=1#config['batch_size'],
+        batch_size=1
     )
 
     unet = Unet(num_classes=1, depth=5).to(device, dtype=torch.double)
@@ -32,12 +26,19 @@ def test(config):
 
     print(f'Test del modelo {config["weights"]}\n')
 
-    gen_dice = 0
-    dices = []
+    acc = BinaryAccuracy(threshold=0.1).to(device, dtype=torch.double)
+    dic = Dice(zero_division=1, threshold=0.1).to(device, dtype=torch.double)
+    f1s = BinaryF1Score(threshold=0.1).to(device, dtype=torch.double)
+    rec = BinaryRecall(threshold=0.1).to(device, dtype=torch.double)
+    pre = BinaryPrecision(threshold=0.1).to(device, dtype=torch.double)
+    jac = BinaryJaccardIndex(threshold=0.1).to(device, dtype=torch.double)
 
-    # since we're not training, we don't need to calculate the gradients for our outputs
-    unet.eval()
+    gen_dice = 0
+    metrics = []
+
+    # Freeze gradients
     with torch.no_grad():
+        unet.eval()
         for i, data in enumerate(test_mris):
             images, labels = data
             images = images.unsqueeze(1).to(device, dtype=torch.double)
@@ -45,17 +46,33 @@ def test(config):
 
             # calculate outputs by running images through the network
             outputs = unet(images)
-            probs = nn.Sigmoid()  # Sigmoid para biclase
-            preds  = probs(outputs) 
-            preds = torch.where(preds>0.5, 1., 0.)
+            probs   = nn.Sigmoid()  # Sigmoid para biclase
+            preds   = probs(outputs) 
+            preds   = torch.where(preds>0.1, 1., 0.)
 
+            '''Metricas''' 
             batch_dice = dice_coeff(preds, labels)
-            #batch_dice = dice(preds, labels.long(), ignore_index=0, zero_division=1) # Metrica dice de torchmetrics
             gen_dice += batch_dice.item()
-            dices.append([i, batch_dice.item()])
-            #print(f'Test Dice score (batch): {batch_dice:.3f}')
+            tm_dice = dic.forward(outputs, labels.unsqueeze(1).long()).item()
+            metrics.append([i, 
+                            acc.forward(outputs, labels.unsqueeze(1)).item(),
+                            batch_dice.item(),
+                            f1s.forward(outputs, labels.unsqueeze(1)).item(),
+                            rec.forward(outputs, labels.unsqueeze(1)).item(),
+                            pre.forward(outputs, labels.unsqueeze(1)).item(),
+                            jac.forward(outputs, labels.unsqueeze(1)).item()]
+            )
+            '''Fin metricas'''
             if (i+1)%100 == 0:
-                print(f'Dice promedio despues de {i+1} batches = {gen_dice/(i+1):.3f}')
+                print(f'\nMetricas promedio hasta el batch No. {i+1}:')
+                print(f'Accuracy      = {acc.compute():.3f}')
+                print(f'Dice (custom) = {gen_dice/(i+1):.3f}')
+                print(f'Dice (tm)     = {tm_dice.compute():.3f}')
+                print(f'F1 Score      = {f1s.compute():.3f}')
+                print(f'Sensibilidad  = {rec.compute():.3f}')
+                print(f'Precision     = {pre.compute():.3f}')
+                print(f'Jaccard       = {jac.compute():.3f}\n')
+                
 
             #plot_batch_full(images.squeeze(1), labels, preds.squeeze(1))
 
@@ -64,10 +81,16 @@ def test(config):
             
     gen_dice = gen_dice / (i+1)
 
-    print(f'\nDice promedio total = {gen_dice:.3f}')
-    df_dice = pd.DataFrame(dices, columns=['Batch', 'Dice'])
-    df_dice = df_dice.assign(id=df_dice.index.values)
-    #df_dice.to_csv(config['test_fn'])
+    print(f'\nMetricas totales:')
+    print(f'Accuracy      = {acc.compute():.3f}')
+    print(f'Dice (custom) = {gen_dice:.3f}')
+    print(f'Dice (tm)     = {tm_dice.compute():.3f}')
+    print(f'F1 Score      = {f1s.compute():.3f}')
+    print(f'Sensibilidad  = {rec.compute():.3f}')
+    print(f'Precision     = {pre.compute():.3f}')
+    print(f'Jaccard       = {jac.compute():.3f}\n')
 
-# dices = torch.tensor(dices)
-# torch.save(dices, PATH_TEST)
+    df_metrics = pd.DataFrame(metrics, columns=['Batch', 'Accuracy', 'Dice', 'F1Score', 'Recall', 'Precision', 'Jaccard'])
+    df_metrics = df_metrics.assign(id=df_metrics.index.values)
+    df_metrics.to_csv(config['test_fn'])
+

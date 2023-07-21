@@ -51,7 +51,7 @@ class Unet2D_DS(Dataset):
 
         self.df = pd.DataFrame(self.L, columns=['Subject', 'Slice', 'Path MRI', 'Path Label'])
         self.df = self.df.assign(id=self.df.index.values).sample(frac=1)
-        print(f'dataframe: \n{self.df} \n')
+        #print(f'dataframe: \n{self.df} \n')
 
 
     def __len__(self):
@@ -62,9 +62,6 @@ class Unet2D_DS(Dataset):
     def __getitem__(self, index):
 
         load_slice = self.df.at[index, 'Slice']
-
-        #mri    = np.int16(nib.load(self.df.at[index, 'Path MRI']).get_data())[:, :, load_slice]
-        #label_ = np.int16(nib.load(self.df.at[index, 'Path Label']).get_data())[:, :, load_slice]
 
         mri    = preprocess(self.df.at[index, 'Path MRI'], self.config, norm=True)[:, :, load_slice]
         label_ = preprocess(self.df.at[index, 'Path Label'], self.config)[:, :, load_slice]
