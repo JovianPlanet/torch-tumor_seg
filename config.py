@@ -15,7 +15,7 @@ def get_parameters(mode):
                    'crit'      : 'BCEDice',      # Fn de costo. Opciones: 'BCEDice', 'BCELog', 'CELoss', 'BCE', 'BCELogW'
                    'n_train'   : 100,            # Cabezas para entrenamiento. Total=295
                    'n_val'     : 15,             # "" Validacion. Total=37
-                   'n_test'    : 37,             # "" Prueba. Total=37
+                   'n_test'    : 15,             # "" Prueba. Total=37
                    'batchnorm' : False,          # Normalizacion de batch
                    'nclasses'  : 1,              # Numero de clases
                    'thres'     : 0.5,            # Umbral
@@ -78,8 +78,16 @@ def get_parameters(mode):
 
     elif mode == 'test':
 
-        PATH_TRAINED_MODEL = './outs/Ex/prueba.pth' # 'weights-bcedice-20_eps-100_heads-2023-03-10-_nobn.pth'
-        PATH_TEST_METS = './outs/Ex/test_metrics.csv'
+        ex = './outs/imgs/weights-BCEDice-20_eps-100_heads-2023-07-03-_nobn(mejor)'
+        mo = 'weights-BCEDice-20_eps-100_heads-2023-07-03-_nobn-e20.pth'
+
+        test_folder = os.path.join(ex, 'test'+mo[:-4])
+        Path(test_folder).mkdir(parents=True, exist_ok=True)
+        img_folder = os.path.join(test_folder, 'imgs')
+        Path(img_folder).mkdir(parents=True, exist_ok=True)
+
+        PATH_TRAINED_MODEL = os.path.join(ex, mo) #'./outs/Ex/prueba.pth' # 'weights-bcedice-20_eps-100_heads-2023-03-10-_nobn.pth'
+        PATH_TEST_METS = os.path.join(test_folder, mo+'-test_metrics.csv')#'./outs/Ex/test_metrics.csv'
 
         return {'mode'       : mode,
                 'data'       : datasets,
@@ -87,23 +95,34 @@ def get_parameters(mode):
                 'labels'     : labels,
                 'weights'    : PATH_TRAINED_MODEL,
                 'test_fn'    : PATH_TEST_METS,
+                'img_folder' : img_folder,
         }
 
     elif mode == 'assess':
 
-        train_losses = './outs/losses-bcedice-20_eps-100_heads-2023-03-10-_nobn.csv'
-        train_dices  = './outs/dices-bcedice-20_eps-100_heads-2023-03-10-_nobn.csv'
-        test_dices = './outs/dice_coeff-bcedice-20_eps-100_heads-2023-03-10-_nobn-test.csv'
+        ex = './outs/imgs/weights-BCEDice-20_eps-100_heads-2023-07-03-_nobn(mejor)'
+        mo = 'weights-BCEDice-20_eps-100_heads-2023-07-03-_nobn-e20.pth'
 
-        files = {'train_Loss': train_losses,
-                 'train_Dice': train_dices,
-                 'test_Dice' : test_dices}
+        plots_folder = os.path.join(ex, 'plots-weights_'+mo[-7:-4])
+
+        Path(plots_folder).mkdir(parents=True, exist_ok=True)
+
+        train_losses = 'losses-BCEDice-20_eps-100_heads-2023-07-03-_nobn.csv'
+        train_dices  = 't-dices-BCEDice-20_eps-100_heads-2023-07-03-_nobn.csv'
+        val_dices = 'v-dices-BCEDice-20_eps-100_heads-2023-07-03-_nobn.csv'
+        test_mets = 'weights-BCEDice-20_eps-100_heads-2023-07-03-_nobn-e20.pth-test_metrics.csv'
+
+        files = {'train_Loss': os.path.join(ex, train_losses),
+                 'train_Dice': os.path.join(ex, train_dices),
+                 'val_Dice'  : os.path.join(ex, val_dices),
+                 'test_mets' : os.path.join(ex, 'testweights-BCEDice-20_eps-100_heads-2023-07-03-_nobn-e20', test_mets)
+        }
 
         return {'mode'     : mode,
                 'labels'   : labels,
-                'losses_fn': losses_fn,
-                'dices_fn' : dices_fn,
-                'files'    : files}
+                'files'    : files,
+                'plots'    : plots_folder,
+        }
 
         # train_losses = './outs/Ex-2023-07-15-01-41-42/losses.csv'
         # train_metrics  = './outs/Ex-2023-07-15-01-41-42/t-accs.csv'

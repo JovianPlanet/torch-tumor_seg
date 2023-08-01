@@ -1,7 +1,9 @@
+import os
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchmetrics.functional import dice
+from torchmetrics.classification import BinaryAccuracy, BinaryF1Score, Dice, BinaryRecall, BinaryPrecision, BinaryJaccardIndex
 import pandas as pd
 from get_data import Unet2D_DS
 from unet import Unet
@@ -67,7 +69,7 @@ def test(config):
                 print(f'\nMetricas promedio hasta el batch No. {i+1}:')
                 print(f'Accuracy      = {acc.compute():.3f}')
                 print(f'Dice (custom) = {gen_dice/(i+1):.3f}')
-                print(f'Dice (tm)     = {tm_dice.compute():.3f}')
+                print(f'Dice (tm)     = {dic.compute():.3f}')
                 print(f'F1 Score      = {f1s.compute():.3f}')
                 print(f'Sensibilidad  = {rec.compute():.3f}')
                 print(f'Precision     = {pre.compute():.3f}')
@@ -76,15 +78,17 @@ def test(config):
 
             #plot_batch_full(images.squeeze(1), labels, preds.squeeze(1))
 
+            fn = os.path.join(config['img_folder'], f'img-{i+1}.pdf')
+
             if torch.any(labels):
-                plot_overlays(images.squeeze(1), labels, preds.squeeze(1))
+                plot_overlays(images.squeeze(1), labels, preds.squeeze(1), mode='save', fn=fn)
             
     gen_dice = gen_dice / (i+1)
 
     print(f'\nMetricas totales:')
     print(f'Accuracy      = {acc.compute():.3f}')
     print(f'Dice (custom) = {gen_dice:.3f}')
-    print(f'Dice (tm)     = {tm_dice.compute():.3f}')
+    print(f'Dice (tm)     = {dic.compute():.3f}')
     print(f'F1 Score      = {f1s.compute():.3f}')
     print(f'Sensibilidad  = {rec.compute():.3f}')
     print(f'Precision     = {pre.compute():.3f}')

@@ -46,8 +46,10 @@ class Unet2D_DS(Dataset):
                     #print(f'\tfile_: {file_}')
                     label_path = os.path.join(data_dir, subject, file_)
 
+            l = preprocess(label_path, self.config, norm=True)
             for slice_ in range(self.config['hyperparams']['model_dims'][2]):
-                self.L.append([subject, slice_, mri_path, label_path])
+                if np.any(l[:, :, slice_]):
+                    self.L.append([subject, slice_, mri_path, label_path])
 
         self.df = pd.DataFrame(self.L, columns=['Subject', 'Slice', 'Path MRI', 'Path Label'])
         self.df = self.df.assign(id=self.df.index.values).sample(frac=1)

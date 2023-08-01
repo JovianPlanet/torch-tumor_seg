@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
 import torch
 
 def plot_batch(x, y):
@@ -71,16 +71,29 @@ def plot_overlays(x, y, p, mode='plot', fn='res'):
         ax4.axis("off")
         ax4.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
 
+        # ax5 = fig.add_subplot(2, 3, 5)
+        # ax5.axis("off")
+        # ax5.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
+        # ax5.imshow(y[im, :, :].cpu().detach().numpy(), cmap='gray', alpha=0.5)
+
+
+        # ax6 = fig.add_subplot(2, 3, 6)
+        # ax6.axis("off")
+        # ax6.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
+        # ax6.imshow(p[im, :, :].cpu().detach().numpy(), cmap="gray", alpha=0.5)
+
         ax5 = fig.add_subplot(2, 3, 5)
         ax5.axis("off")
         ax5.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
-        ax5.imshow(y[im, :, :].cpu().detach().numpy(), cmap='gray', alpha=0.5)
+        y[im, :, :][y[im, :, :]==0] = np.nan#y[im, :, :][y[im, :, :]< 0.000001] = np.nan
+        ax5.imshow(y[im, :, :].cpu().detach().numpy(), cmap='Spectral', alpha=0.8)
 
 
         ax6 = fig.add_subplot(2, 3, 6)
         ax6.axis("off")
         ax6.imshow(x[im, :, :].cpu().detach().numpy(), cmap="gray")
-        ax6.imshow(p[im, :, :].cpu().detach().numpy(), cmap="gray", alpha=0.5)
+        p[im, :, :][p[im, :, :]==0] = np.nan#p[im, :, :][p[im, :, :]< 0.000001] = np.nan
+        ax6.imshow(p[im, :, :].cpu().detach().numpy(), cmap="Spectral", alpha=0.8)
 
         fig.tight_layout()
 
@@ -88,6 +101,8 @@ def plot_overlays(x, y, p, mode='plot', fn='res'):
             plt.show()
         elif mode == 'save':
             plt.savefig(fn, dpi='figure', format='pdf')
+
+        plt.close('all')
 
         return
 
